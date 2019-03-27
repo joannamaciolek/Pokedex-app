@@ -1,27 +1,29 @@
-var pokemonRepository = (function () {
+var pokemonRepository = (function() {
   var repository = [];
 
   var apiUrl = 'https://pokeapi.co/api/v2/pokemon/';
 
   function loadList() {
     //fetches the data from API
-    return $.ajax(apiUrl).then(function (response) {
-      response.results.forEach(function(item){
-        var pokemon = {
-          name: item.name,
-          detailsUrl: item.url
-        };
-        //adds the data to repository
-        add(pokemon);
+    return $.ajax(apiUrl)
+      .then(function(response) {
+        response.results.forEach(function(item) {
+          var pokemon = {
+            name: item.name,
+            detailsUrl: item.url
+          };
+          //adds the data to repository
+          add(pokemon);
+        });
+      })
+      .catch(function(e) {
+        /* eslint-disable no-console */
+        console.error(e);
       });
-    }).catch(function (e) {
-      console.error(e);
-    })
   }
 
   //Creates new elements and adds into the DOM
-  function addListItem (eachPokemon) {
-
+  function addListItem(eachPokemon) {
     //creates li element in DOM
     var $li = $('<li>');
 
@@ -29,20 +31,22 @@ var pokemonRepository = (function () {
     $('ul').append($li);
 
     //creates button element in DOM ,add class to it & pokemon name
-    var $button = $('<button class = "button-style">' + eachPokemon.name + '</button>' );
+    var $button = $(
+      '<button class = "button-style">' + eachPokemon.name + '</button>'
+    );
 
     //appends button to website as a child of li
     $li.append($button);
 
     //executes showDetails function if button is clicked
-    $button.on('click',function(event){
+    $button.on('click', function() {
       showDetails(eachPokemon);
     });
   }
 
-   //loads details for each pokemon by clicking on the button
+  //loads details for each pokemon by clicking on the button
   function showDetails(item) {
-    pokemonRepository.loadDetails(item).then(function () {
+    pokemonRepository.loadDetails(item).then(function() {
       //displays details in a modal
       showModal(item);
     });
@@ -51,10 +55,10 @@ var pokemonRepository = (function () {
   // adds item to the repository
   function add(item) {
     //validates if item is object
-    if (typeof item === 'object' ){
+    if (typeof item === 'object') {
       repository.push(item);
-    }else{
-      console.log('new item is not an object therefore it cannot be added');
+    } else {
+      console.error('new item is not an object therefore it cannot be added');
     }
   }
 
@@ -66,44 +70,49 @@ var pokemonRepository = (function () {
   //loads detailed data for each pokemon using detailsUrl property
   function loadDetails(item) {
     var url = item.detailsUrl;
-    return $.ajax(url).then(function (response) {
-      item.imageUrl = response.sprites.front_default;
-      item.height = response.height;
-      item.types = Object.keys(response.types);
-      item.weight = response.weight;
-    }).catch(function (e) {
-      console.error(e);
-    });
+    return $.ajax(url)
+      .then(function(response) {
+        item.imageUrl = response.sprites.front_default;
+        item.height = response.height;
+        item.types = Object.keys(response.types);
+        item.weight = response.weight;
+      })
+      .catch(function(e) {
+        console.error(e);
+        /* eslint-enable no-console */
+      });
   }
 
   // creating modal content
-  function showModal(item){
+  function showModal(item) {
     var $modalContainer = $('#modal-container');
 
     //clearing all existing modal content
     $modalContainer.text('');
 
     //creating div element in DOM & adding class to div DOM element
-    var $modal =$('<div class = "modal">');
+    var $modal = $('<div class = "modal">');
 
     //creating closing button in modal content
-    var $closeButtonElement = $('<button class = "modal-close"> Close </button>');
+    var $closeButtonElement = $(
+      '<button class = "modal-close"> Close </button>'
+    );
 
     // adding event listener to close modal when clicked on button
-    $closeButtonElement.on( 'click' , hideModal);
+    $closeButtonElement.on('click', hideModal);
 
     //creating element for name in modal content & adding pokemon name to it
-    var $nameElement = $('<h1>' + item.name  + '</h1>');
+    var $nameElement = $('<h1>' + item.name + '</h1>');
 
     // creating img in modal content
-    var $imageElement = $('<img class = "modal-img">')
-    $imageElement.attr("src", item.imageUrl);
+    var $imageElement = $('<img class = "modal-img">');
+    $imageElement.attr('src', item.imageUrl);
 
     //creating element for height in modal content & adding height to it
-    var $heightElement = $('<p>'+ 'height : ' + item.height  + '</p>');
+    var $heightElement = $('<p>' + 'height : ' + item.height + '</p>');
 
     //creating element for weight in modal content & adding weight to it
-    var $typesElement = $('<p>' +'weight : ' + item.weight + '</p>');
+    var $typesElement = $('<p>' + 'weight : ' + item.weight + '</p>');
 
     //appending modal content to webpage
     $modal.append($closeButtonElement);
@@ -124,22 +133,20 @@ var pokemonRepository = (function () {
   }
 
   //hides modal when clicked on ESC on keyboard
-  window.addEventListener('keydown', (e) =>{
-    var $modalContainer =  $('#modal-container');
-    if (e.key === 'Escape' && $modalContainer.hasClass('is-visible')){
+  window.addEventListener('keydown', e => {
+    var $modalContainer = $('#modal-container');
+    if (e.key === 'Escape' && $modalContainer.hasClass('is-visible')) {
       hideModal();
     }
-  })
+  });
 
   var $modalContainer = $('#modal-container');
   //hides modal if clicked outside of it
-  $modalContainer.on('click' ,function(event)  {
-    var $modalContainer = $('#modal-container');
+  $modalContainer.on('click', function(event) {
     if ($(event.target).closest('#modal-container').length) {
       hideModal();
-      }
     }
-   );
+  });
 
   return {
     add: add,
@@ -147,18 +154,17 @@ var pokemonRepository = (function () {
     addListItem: addListItem,
     showDetails: showDetails,
     loadList: loadList,
-    loadDetails:loadDetails,
+    loadDetails: loadDetails,
     showModal: showModal,
     hideModal: hideModal
   };
+})();
 
-} ) ();
-
-  // Loading the data from API
+// Loading the data from API
 pokemonRepository.loadList().then(function() {
   // accessing pokemon repository & running function over each object in repository
-  pokemonRepository.getAll().forEach(function (eachPokemon){
+  pokemonRepository.getAll().forEach(function(eachPokemon) {
     //executing addListItem function for each object in pokemon repository
-    pokemonRepository.addListItem (eachPokemon);
+    pokemonRepository.addListItem(eachPokemon);
   });
 });
