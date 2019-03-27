@@ -46,7 +46,8 @@ ul li{
 }
 
 .button-style:hover,
-.button-style:focus {
+.button-style:focus
+ {
   background-color: #000;
   border-bottom: 5px solid #F4F4F4;
   outline:0;
